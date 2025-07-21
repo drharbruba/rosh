@@ -453,9 +453,33 @@ function displayStats() {
         }
       }, 1000);
     }
+    
+  async function autoLoadProgress() {
+  try {
+    const response = await fetch('./review-progress.json');
+    if (!response.ok) throw new Error('File not found');
+
+    const data = await response.json();
+    generatedQuestions = data.generatedQuestions || [];
+    correctAnswers = data.correctAnswers || 0;
+    wrongAnswers = data.wrongAnswers || 0;
+    questionIndex = data.questionIndex || 0;
+    document.getElementById('answerBox').value = data.answerBox || '';
+    document.getElementById('answerBox2').value = data.answerBox2 || '';
+
+    displayQuestion();
+    displayStats();
+  } catch (error) {
+    console.warn('📂 review-progress.json not found, generating new questions...');
+    generateQuestions();
+  }
+}
+
+
 
     window.onload = () => {
-      generateQuestions();
+      // generateQuestions();
+	  autoLoadProgress(); // Load saved data automatically
     };
   </script>
 
