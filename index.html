@@ -191,26 +191,75 @@ button:hover {
   }
 }
 
+.sidebar-toggle {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  font-size: 1.8em;
+  cursor: pointer;
+  z-index: 2000;
+}
+
+.sidebar-menu {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 240px;
+  height: 100%;
+  background: #ffffff;
+  border-right: 1px solid #ccc;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: left 0.3s ease;
+  z-index: 1999;
+}
+
+.sidebar-menu.open {
+  left: 0;
+}
+
   </style>
 </head>
 <body>
   <h2>Review Dashboard</h2>
+<div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
+
+<div id="sidebarMenu" class="sidebar-menu">
+  <h4>خيارات عرض الأزرار:</h4>
+  <label><input type="checkbox" onchange="toggleButton('btn-gnrat');toggleButton('numQuestions');toggleButton('btn-gnratla')" checked> 🎲Generate</label><br>
+   <label><input type="checkbox" onchange="toggleButton('btn-save')" checked> 💾Save</label><br>
+   <label><input type="checkbox" onchange="toggleButton('btn-Load')" checked> 📂Load</label><br>
+   <label><input type="checkbox" onchange="toggleButton('btn-timer')" checked> ⏱timer</label><br>   
+  <label><input type="checkbox" onchange="toggleButton('btn-correct')" checked> ✅Correct</label><br>
+  <label><input type="checkbox" onchange="toggleButton('btn-wrong')" checked> ❌Wrong</label><br>
+  <label><input type="checkbox" onchange="toggleButton('btn-prev')" checked> ⬅️Previous</label><br>
+  <label><input type="checkbox" onchange="toggleButton('btn-next')" checked> ➡️Next</label><br>
+  <label><input type="checkbox" onchange="toggleButton('btn-Note')" checked> 📝 Note</label><br>
+   <label><input type="checkbox" onchange="toggleButton('btn-Note2')" checked> 📝 Note</label><br>
+   <label><input type="checkbox" onchange="toggleButton('btn-Load2')" checked> 📂LoadOldQ</label><br>  
+   <label><input type="checkbox" onchange="toggleButton('btn-save2')" checked> 💾 SaveAllQ</label><br>
+   <label><input type="checkbox" onchange="toggleButton('btn-go');toggleButton('gotoQuestionNumbval');toggleButton('btn-gola')" checked> Go to</label><br>
+
+
+  
+</div>
 
   <div  class="nav-tob" >
-    <label for="numQuestions">Number of Questions:</label>
+    <label id="btn-gnratla" for="numQuestions">Number of Questions:</label>
     <input type="number" id="numQuestions" value="100" min="1" max="5000" />
-<button onclick="generateQuestions()">🎲Generate</button>
-<button onclick="saveProgressToFile()">💾Save</button>
-<button onclick="LoadProgressfromFile()">📂Load</button>
-<button onclick="startTimer(generatedQuestions.length)">⏱timer</button>
-<button onclick="markAnswer(true)">✅Correct</button>
-<button onclick="markAnswer(false)">❌Wrong</button>
-<button onclick="previousQuestion()">⬅️Previous</button>
-<button onclick="nextQuestion()">➡️Next</button>
-    <label for="gotoQuestionNumbval">Go to #:</label>
+<button id="btn-gnrat" onclick="generateQuestions()">🎲Generate</button>
+<button id="btn-save" onclick="saveProgressToFile()">💾Save</button>
+<button id="btn-Load" onclick="LoadProgressfromFile()">📂Load</button>
+<button id="btn-timer" onclick="startTimer(generatedQuestions.length)">⏱timer</button>
+<button id="btn-correct" onclick="markAnswer(true)">✅Correct</button>
+<button id="btn-wrong" onclick="markAnswer(false)">❌Wrong</button>
+<button id="btn-prev" onclick="previousQuestion()">⬅️Previous</button>
+<button id="btn-next" onclick="nextQuestion()">➡️Next</button>
+
+    <label id="btn-gola" for="gotoQuestionNumbval">Go to #:</label>
     <input type="number" id="gotoQuestionNumbval" value="1" min="1" max="5000" />
-    <button onclick="gotoQuestion()">Go</button>
-    <button onclick="toggleNotePanel()">📝 Note</button>
+    <button id="btn-go" onclick="gotoQuestion()">Go</button>
+    <button id="btn-Note" onclick="toggleNotePanel()">📝 Note</button>
   </div>
 
 
@@ -272,7 +321,9 @@ button:hover {
   const path = `${folder}/${val}.html#answer_detail`;
   document.getElementById('questionFrame').src = path;
 ">💬</button>
-    <button onclick="toggleNotePanel()">📝</button>
+    <button id="btn-Note2" onclick="toggleNotePanel()">📝</button>
+        <button id="btn-Load2" onclick="loadPreviousQuestions()">📂LoadOldQ</button>
+   <button id="btn-save2"onclick="saveMergedQuestions()">💾 SaveAllQ</button>
 	<button onclick="previousQuestion()">⬅️Previous</button>
 <button onclick="nextQuestion()">➡️Next</button>
   </div>
@@ -285,23 +336,25 @@ button:hover {
     const timerEl = document.getElementById("timer");
     const statsEl = document.getElementById("stats");
 
-    function generateQuestions() {
-      const num = Math.min(parseInt(document.getElementById('numQuestions').value), 5000);
-      const min = 525583622, max = 525588621;
-      const used = new Set();
-      generatedQuestions = [];
 
-      while (generatedQuestions.length < num) {
-        const rand = Math.floor(Math.random() * (max - min + 1)) + min;
-        if (!used.has(rand)) {
-          used.add(rand);
-          generatedQuestions.push(rand);
-        }
+
+      function generateQuestions() {
+    const num = Math.min(parseInt(document.getElementById('numQuestions').value), 5000);
+    const min = 525583622, max = 525588621;
+    const used = new Set(previousQuestions);
+    generatedQuestions = [];
+
+    while (generatedQuestions.length < num) {
+      const rand = Math.floor(Math.random() * (max - min + 1)) + min;
+      if (!used.has(rand)) {
+        used.add(rand);
+        generatedQuestions.push(rand);
       }
-
-      questionIndex = 0;
-      displayQuestion();
     }
+
+    questionIndex = 0;
+    displayQuestion();
+  }
 
 function toggleNotePanel() {
   const panel = document.getElementById("notePanel");
@@ -498,6 +551,49 @@ function displayStats() {
     setTimeout(() => btn.classList.remove("bounce-active"), 400);
   });
 });
+
+
+function toggleSidebar() {
+  const menu = document.getElementById('sidebarMenu');
+  menu.classList.toggle('open');
+}
+
+function toggleButton(id) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.style.display = btn.style.display === 'none' ? 'inline-block' : 'none';
+}
+
+
+
+  let previousQuestions = [];
+
+  function loadPreviousQuestions() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function () {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const data = JSON.parse(reader.result);
+        previousQuestions = data.generatedQuestions || [];
+        alert(`✅ تم تحميل ${previousQuestions.length} سؤال سابق`);
+      };
+      reader.readAsText(this.files[0]);
+    };
+    input.click();
+  }
+
+  function saveMergedQuestions() {
+    const merged = Array.from(new Set([...previousQuestions, ...generatedQuestions]));
+    const blob = new Blob([JSON.stringify({ generatedQuestions: merged }, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'all-questions.json';
+    link.click();
+  }
+
+
 
   </script>
 
